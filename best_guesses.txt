@@ -1,0 +1,42 @@
+those,2.81,4.2
+least,2.85,4.16
+later,2.82,4.17
+heart,2.85,4.2
+share,2.84,4.19
+their,2.85,4.23
+least,2.85,4.16
+trace,2.81,4.15
+
+init guess = trace
+Good Mean guesses        = 4.15
+Weighted mean guesses    = 2.81
+
+Bad Mean guesses         = 7.63
+Weighted mean guesses    = 7.26
+
+Overall Mean guesses     = 4.31
+Weighted mean guesses    = 2.81
+
+Number of Good successes = 3419
+Number of Bad  successes = 166
+Percent bad              = 4.63%
+Percent bad (by usage)   = 0.09%
+
+# Here, we don't increment the guesses if there is only one item left to search for.
+init guess = trace
+Good Mean guesses        = 3.59
+Weighted mean guesses    = 2.66
+
+Bad Mean guesses         = 7.57
+Weighted mean guesses    = 7.06
+
+Overall Mean guesses     = 3.7
+Weighted mean guesses    = 2.66
+
+Number of Good successes = 3485
+Number of Bad  successes = 100
+Percent bad              = 2.79%
+Percent bad (by usage)   = 0.06%
+
+
+
