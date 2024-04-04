@@ -87,13 +87,13 @@ julia> create_wordle_info("teens", "where")
 """
 function create_wordle_info(guess :: T, # Guess
                             pword :: T, # Puzzle word
-                           ) :: Tuple{Vector{Tuple{Char, Int64}}, Dict{Char, Tuple{Int64, Int64}}} where {T <: AbstractString} 
+                           ) :: Tuple{Vector{Tuple{Char, Int}}, Dict{Char, Tuple{Int, Int}}} where {T <: AbstractString} 
     n     = length(pword)
-    e_idx = Int64[]
+    e_idx = Int[]
     f_idx = collect(1:n)
-    c_idx = Int64[]
+    c_idx = Int[]
 
-    ary :: Vector{Tuple{Char, Int64}} = []
+    ary :: Vector{Tuple{Char, Int}} = []
   
     # Push exact info onto `ary`.
     for i in 1:n
@@ -105,15 +105,15 @@ function create_wordle_info(guess :: T, # Guess
     
     c_idx = setdiff(f_idx, e_idx)
 
-    dp = Dict{Char, Int64}()
-    dg = Dict{Char, Int64}()
+    dp = Dict{Char, Int}()
+    dg = Dict{Char, Int}()
     for i in c_idx
         dp[pword[i]] = 1 + get(dp, pword[i], 0)
         dg[guess[i]] = 1 + get(dg, guess[i], 0)
     end
 
     # Dictionary 
-    d = Dict{Char, Tuple{Int64, Int64}}()
+    d = Dict{Char, Tuple{Int, Int}}()
     for i in c_idx
         guess_letter_count           = dg[guess[i]]
         guess_letter_count_in_puzzle = get(dp, guess[i], 0)
@@ -169,7 +169,7 @@ julia> filter_universe((winfo, d), words)
  "where"
 ```
 """
-function filter_universe(wordle_info :: Tuple{Vector{Tuple{Char, Int64}}, Dict{Char, Tuple{Int64, Int64}}},
+function filter_universe(wordle_info :: Tuple{Vector{Tuple{Char, Int}}, Dict{Char, Tuple{Int, Int}}},
                          words       :: Vector{T}                                                         ,
                         ) :: Vector{T} where {T <: AbstractString}
 
@@ -249,7 +249,7 @@ The strategy consists of the following:
 - `swords::AbstractVector`    : A Vector of sorted strings (sorted by frequency of occurrence).
 - `lfa::Vector{Char}`         : This is the alphabet in lower case as a character vector from 
                                 most to least used.
-- `c_idx::Vector{Int64}`      : This is the index values of words to analyze. 
+- `c_idx::Vector{Int}`      : This is the index values of words to analyze. 
                 This list is usually the complement 
                 of exact match indices from a previous guess.
 
@@ -264,11 +264,11 @@ The strategy consists of the following:
 """
 function freq_letter_strat(swords:: AbstractVector{T}    , # The sorted list of words to choose from. 
                            lfa   :: Vector{Char}         , # The letter frequency order of the alphabet.
-                           c_idx :: Vector{Int64}        , # The complement of the indices that are exact.
+                           c_idx :: Vector{Int}        , # The complement of the indices that are exact.
                           ) :: T where {T <: AbstractString}
    
     # Create corresponding dictionaries for each index.
-    ds = [Dict{Char, Int64}() for _ in c_idx]
+    ds = [Dict{Char, Int}() for _ in c_idx]
     ary = []
     
     # Fill each of the dicts: at index 
@@ -326,7 +326,7 @@ to pass in a guessing strategy function.
 
      **NOTE:** The universe is assumed to be sorted in 
                reverse order by the :freq column.
-- `rec_count::Int64`   : The number of calls to this function.
+- `rec_count::Int`   : The number of calls to this function.
 - `sol_path::Vector{Any}`    : Any containing the current list of guesses: 
                     `[ (guess, exact_info, universe_size) ...]`
 - `last_guess::T`  : The previous guess.
@@ -338,8 +338,8 @@ to pass in a guessing strategy function.
 - `guess_strategy::Union{Function,Nothng}` : If not `nothing`, apply this function to pick the next guess.
                      If `nothing`, pick the next guess as the most frequent word
                      in the current universe.
-- `ul::Int64`             : The lower threshold size of the filtered Wordle universe.
-- `uu::Int64`             : The upper threshold size of the filtered Wordle universe.
+- `ul::Int`             : The lower threshold size of the filtered Wordle universe.
+- `uu::Int`             : The upper threshold size of the filtered Wordle universe.
 - `init_guess::T`     : The starting guess to use.
 
 Here, 
@@ -379,16 +379,16 @@ julia> solve_wordle("taste"; init_guess="their")
 """
 function solve_wordle(puzzle_word :: T                          , # Puzzle word.
                       universe_df :: DataFrame     = WORDLE_DF  , # Wordle database as DataFrame.
-                      rec_count   :: Int64         = 1          , # Number of calls (including this one) to this function.
+                      rec_count   :: Int         = 1          , # Number of calls (including this one) to this function.
                       sol_path    :: Vector{Any}   = []         , # The solution path of guessed words, so far.
                       last_guess  :: T             = T("")      , # The last guess.
                       lfa         :: Vector{Char}  = LFA        ; # The frequency of use of the alphabet.
                       chk_inputs  :: Bool          = true       , # Do we check the input contract?
                       guess_strategy ::Union{Function, Nothing} = nothing    , # Function to pick the next guess.
-                      ul          :: Int64         = 20         , # Used if function guess_strategy given.
-                      uu          :: Int64         = 50         , # Used if function guess_strategy given.
+                      ul          :: Int         = 20         , # Used if function guess_strategy given.
+                      uu          :: Int         = 50         , # Used if function guess_strategy given.
                       init_guess  :: T             = T("trace") , # Starting guess to use.
-                     ) :: Tuple{Any, Int64, Symbol} where {T <: AbstractString} 
+                     ) :: Tuple{Any, Int, Symbol} where {T <: AbstractString} 
 
     # Check input contract?
     if chk_inputs && rec_count == 1
