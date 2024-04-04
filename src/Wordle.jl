@@ -246,10 +246,10 @@ The strategy consists of the following:
 - T <: AbtractString
 
 ## Arguments
-- `swords` : A Vector of sorted strings (sorted by frequency of occurrence).
-- `lfa`    : This is the alphabet in lower case as a character vector from 
-                most to least used.
-- `c_idx`  : This is the index values of words to analyze. 
+- `swords::AbstractVector`    : A Vector of sorted strings (sorted by frequency of occurrence).
+- `lfa::Vector{Char}`         : This is the alphabet in lower case as a character vector from 
+                                most to least used.
+- `c_idx::Vector{Int64}`      : This is the index values of words to analyze. 
                 This list is usually the complement 
                 of exact match indices from a previous guess.
 
@@ -262,9 +262,9 @@ The strategy consists of the following:
     The characters in swords are lowercase letters: [a-z].
 
 """
-function freq_letter_strat(swords:: Vector{T}    , # The sorted list of words to choose from. 
-                           lfa   :: Vector{Char} , # The letter frequency order of the alphabet.
-                           c_idx :: Vector{Int64}, # The complement of the indices that are exact.
+function freq_letter_strat(swords:: AbstractVector{T}    , # The sorted list of words to choose from. 
+                           lfa   :: Vector{Char}         , # The letter frequency order of the alphabet.
+                           c_idx :: Vector{Int64}        , # The complement of the indices that are exact.
                           ) :: T where {T <: AbstractString}
    
     # Create corresponding dictionaries for each index.

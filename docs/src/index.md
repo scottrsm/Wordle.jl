@@ -32,9 +32,8 @@ filter_universe
 ```
 
 ```@docs
-freq_letter_stat
+freq_letter_strat
 ```
-
 
 
 ## Index
