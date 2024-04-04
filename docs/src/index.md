@@ -31,6 +31,10 @@ create_wordle_info
 filter_universe
 ```
 
+```@docs
+freq_letter_stat
+```
+
 
 
 ## Index
