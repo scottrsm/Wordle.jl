@@ -1,5 +1,5 @@
-using Test
 using Wordle
+using Test
 import InlineStrings: String7
 
 @testset "Wordle (Fidelity)                                              " begin

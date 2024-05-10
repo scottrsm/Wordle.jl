@@ -2,9 +2,9 @@ module Wordle
 
 export create_wordle_info, filter_universe, freq_letter_strat, solve_wordle
 
+import CSV
 using DataFrames
 import InlineStrings: String7
-import CSV
 
 struct NotSorted <: Exception
     var::String
