@@ -1,7 +1,7 @@
 name = "Wordle"
 uuid = "ce391ddf-23ab-468f-b121-ca3c991c210e"
 authors = ["Roland Scott McIntire"]
-version = "1.0.2"
+version = "1.0.3"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -15,3 +15,8 @@ julia = "1.10"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
+
+
