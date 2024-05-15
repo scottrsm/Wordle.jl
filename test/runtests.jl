@@ -2,11 +2,11 @@ using Wordle
 using Test
 using InlineStrings
 
-@testset "Wordle (Fidelity)                                              " begin
+@testset "Wordle (Fidelity)                                                   " begin
     @test length(detect_ambiguities(Wordle)) == 0
 end
 
-@testset "Wordle (create_wordle_info)                                    " begin
+@testset "Wordle (create_wordle_info)                                         " begin
 
     winfo, d = create_wordle_info(InlineString("which"), InlineString("where"))
     @test  winfo == [('w', 1), ('h', 2)]
@@ -16,7 +16,7 @@ end
     @test  d == Dict('n' => (0, 0), 's' => (0, 0), 't' => (0, 0), 'e' => (1, 1))
 end
 
-@testset "Wordle (filter_universe)                                       " begin
+@testset "Wordle (filter_universe)                                            " begin
     ## Universe of words.
 	words    = inlinestrings(["state", "which", "where", "child", "there", "taste"])
 
@@ -25,7 +25,7 @@ end
 	@test filter_words == InlineString["where"]
 end
 
-@testset "Wordle (solve_wordle with InlineString Database with InlineString Inputs)" begin
+@testset "Wordle (solve_wordle with InlineString Database/Inputs)             " begin
     res = solve_wordle(InlineString("taste"); init_guess=InlineString("their"))
     @test res == (Any[(InlineString("their"), [('t', 1), ('e', -3)], 3585), 
                       (InlineString("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 

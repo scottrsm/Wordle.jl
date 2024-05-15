@@ -30,7 +30,8 @@ tmp_df[!, :word] = inlinestrings(tmp_df.word)
 # Create a constant DataFrame.
 const WORDLE_DF = deepcopy(tmp_df)
 
-# Clean up the tmp DataFrame.
+# Clean up the tmp_df DataFrame.
+tmp_df = nothing
 GC.gc()
 
 
