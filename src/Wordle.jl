@@ -17,23 +17,9 @@ Base.show(io::IO, e::NotSorted) = print(io, "Words are NOT sorted by $(e.var)")
 const LFA = collect("etaoinshrdlcumwfgypbvkjxqz")
 
 # Load Wordle database -- stored as a CSV file. 
-tmp_df =  DataFrame(CSV.File(joinpath(@__DIR__, "../data", "wordle_db.csv"); 
-                                      header=6                             ,   
-                                      types=[String, Float64]              ,   
-                                      comment="#")                          )
-
-# We wish to use a fixed string of the right size.
-# Although for the NYT puzzle the length of the words is set to 5, if one
-# were to generalize then the fixed size could vary.
-tmp_df[!, :word] = inlinestrings(tmp_df.word)
-
-# Create a constant DataFrame.
-const WORDLE_DF = deepcopy(tmp_df)
-
-# Clean up the tmp_df DataFrame.
-tmp_df = nothing
-GC.gc()
-
+const WORDLE_DF =  DataFrame(CSV.File(joinpath(@__DIR__, "../data", "wordle_db.csv"); 
+                                      header=6                                      ,   
+                                      comment="#")                                   )
 
 """
 # Solver Strategy
