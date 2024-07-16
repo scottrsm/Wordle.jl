@@ -313,12 +313,12 @@ By default, makes guesses based on the most frequently used
 word in the universe passed in. However, there is an option
 to pass in a guessing strategy function.
     
-## ASSUMES: The universe DataFrame is sorted from highest frequency to lowest.
+# ASSUMES: The universe DataFrame is sorted from highest frequency to lowest.
 
-## Type Constraints
+# Type Constraints
 - T <: AbtractString
 
-## Arguments
+# Arguments
 
 - `puzzle_word::T` : The puzzle word.
 - `universe_df::DataFrame` : A DataFrame with schema: word(words of the same length), 
@@ -332,7 +332,7 @@ to pass in a guessing strategy function.
 - `last_guess::T`  : The previous guess.
 - `lfa::Vector{Char}`         : The lowercase alphabet listed in frequency-of-use order.
 
-## Keyword Arguments
+# Keyword Arguments
 
 - `chk_inputs::Bool`     : If `true`, check the input contract.
 - `guess_strategy::Union{Function,Nothng}` : If not `nothing`, apply this function to pick the next guess.
@@ -350,7 +350,7 @@ Here,
   is used -- the most frequently used word in the existing filtered Wordle
   universe is chosen.
 
-##  Input Contract
+#  Input Contract
 - `universe_df` schema is (:word, :freq). Define `words`, `freq`, and `N` by: 
     - `words = universe_df[:words]`; 
     - `freq  = universe[:freq]`;
@@ -358,7 +358,7 @@ Here,
 - `∃ m > 0, ∀ i∈[1,N], |words[i]| == m` ``\\quad`` (All the words in `universe_df` have the same length. )
 - `words == words[argsort[freq]]`       ``\\quad`` (Words are sorted from highest to lowest word *usage*.)
 
-## Return
+# Return
     (sol_path, number-of-guesses, :SUCCESS/:FAILURE)
 
    **NOTE:** A sol_path that does not include the puzzle word, means
@@ -367,7 +367,7 @@ Here,
               only one word left. In this case the guess count was 
               increased by 1, but the function did not recurse.
 
-## Examples
+# Examples
 ```jdoctest
 julia> solve_wordle("taste"; init_guess="their")
 
