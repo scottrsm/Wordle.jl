@@ -7,6 +7,7 @@ version = "1.0.5"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 InlineStrings = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
+SentinelArrays = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
 
 [compat]
 julia = "1.10"
@@ -17,8 +18,5 @@ DocumenterTools = "35a29f4d-8980-5a13-9543-d66fff28ecb8"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
 doc = ["Documenter", "DocumenterTools"]
-
-
-
+test = ["Test"]

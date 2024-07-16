@@ -61,19 +61,19 @@ The latter is interpreted thusly:
 - Else               There are *at least* NUMBER\\_OF\\_MATCHES with this 
                      letter that should occur in the puzzle word.
 
-## Type Constraints
+# Type Constraints
 - T <: AbstractString
 
-## Arguments
+# Arguments
 - `guess::T`: The guess for the puzzle.
 - `pword::T`: The puzzle word.
      
     
-## Returns
+# Returns
     A tuple of a vector of tuples of exact matches and a dictionary of 
     inexact match info.
 
-## Examples
+# Examples
 ```jdoctest
 julia> create_wordle_info("which", "where")
 ([('w', 1), ('h', 2)], Dict('h' => (0, 0), 'c' => (0, 0), 'i' => (0, 0)))
@@ -118,9 +118,10 @@ function create_wordle_info(guess :: T, # Guess
         guess_letter_count_in_puzzle = get(dp, guess[i], 0)
 
 
-        # If number of times the letter guess[i] is seen in the puzzle is greater than or equal
-        # to the number of times it occurs in the guess word, then every such letter
-        # in the guess word will be recognized as an inexact match.
+        #= If number of times the letter guess[i] is seen in the puzzle is greater than or equal
+           to the number of times it occurs in the guess word, then every such letter
+           in the guess word will be recognized as an inexact match.
+		=#
         if dg[guess[i]] <= guess_letter_count_in_puzzle
             d[guess[i]]  = (guess_letter_count, 1)
         else # Otherwise, only `guess_letter_count_in_puzzle` number of this letter will "light up" as an inexact match.
@@ -140,21 +141,21 @@ end
 
 Filter an existing universe of words based on match info.
 
-## Type Constraints
+# Type Constraints
 - T <: AbtractString
 
-## Arguments
+# Arguments
 - `wordle_info` : Wordle info of the form: 
                     `([(LETTER, EXACT_POSITION)], Dict( LETTER => (k, n)))`
                   The Wordle info -- the same type as the return value from 
                   `create_wordle_info`.
 - `words`       : A Vector of words of type `T`.
 
-## Return
+# Return
     A subset of the `words` vector based on the filter information 
     from `wordle_info`.
 
-## Examples
+# Examples
 ```jdoctest
 julia> (winfo, d) = create_wordle_info("which", "where")
 
@@ -169,7 +170,7 @@ julia> filter_universe((winfo, d), words)
 ```
 """
 function filter_universe(wordle_info :: Tuple{Vector{Tuple{Char, Int}}, Dict{Char, Tuple{Int, Int}}},
-                         words       :: Vector{T}                                                         ,
+                         words       :: Vector{T}                                                   ,
                         ) :: Vector{T} where {T <: AbstractString}
 
     # Nothing left to filter.
@@ -241,10 +242,10 @@ The strategy consists of the following:
         Pick the one that is most frequent.
         This will be our guess.
 
-## Type Constraints
+# Type Constraints
 - T <: AbtractString
 
-## Arguments
+# Arguments
 - `swords::AbstractVector`    : A Vector of sorted strings (sorted by frequency of occurrence).
 - `lfa::Vector{Char}`         : This is the alphabet in lower case as a character vector from 
                                 most to least used.
@@ -252,11 +253,11 @@ The strategy consists of the following:
                 This list is usually the complement 
                 of exact match indices from a previous guess.
 
-## Return
+# Return
 
     A guess word.
 
-## Assumes
+# Assumes
 
     The characters in swords are lowercase letters: [a-z].
 
@@ -378,14 +379,14 @@ julia> solve_wordle("taste"; init_guess="their")
 """
 function solve_wordle(puzzle_word :: T                          , # Puzzle word.
                       universe_df :: DataFrame     = WORDLE_DF  , # Wordle database as DataFrame.
-                      rec_count   :: Int         = 1          , # Number of calls (including this one) to this function.
+                      rec_count   :: Int           = 1          , # Number of calls (including this one) to this function.
                       sol_path    :: Vector{Any}   = []         , # The solution path of guessed words, so far.
                       last_guess  :: T             = T("")      , # The last guess.
                       lfa         :: Vector{Char}  = LFA        ; # The frequency of use of the alphabet.
                       chk_inputs  :: Bool          = true       , # Do we check the input contract?
-                      guess_strategy ::Union{Function, Nothing} = nothing    , # Function to pick the next guess.
-                      ul          :: Int         = 20         , # Used if function guess_strategy given.
-                      uu          :: Int         = 50         , # Used if function guess_strategy given.
+                      guess_strategy ::Union{Function, Nothing} = nothing , # Function to pick the next guess.
+                      ul          :: Int           = 20         , # Used if function guess_strategy given.
+                      uu          :: Int           = 50         , # Used if function guess_strategy given.
                       init_guess  :: T             = T("trace") , # Starting guess to use.
                      ) :: Tuple{Any, Int, Symbol} where {T <: AbstractString} 
 
@@ -426,12 +427,13 @@ function solve_wordle(puzzle_word :: T                          , # Puzzle word.
     end
     word_len = length(guess)
 
-    # If we specified a picking strategy, modify the guess.
-    #  -- Only used after first guess (last_guess != "").
-    # The strategy is based on:
-    # 1. The existing universe
-    # 2. The letter frequency order.
-    # 3. The indices to focus on.
+    #= If we specified a picking strategy, modify the guess.
+       -- Only used after first guess (last_guess != "").
+       The strategy is based on:
+       1. The existing universe
+       2. The letter frequency order.
+       3. The indices to focus on.
+	=# 
     if (guess_strategy !== nothing) && (last_guess != "")
         if length(sol_path) != 0
             exact_info = sol_path[end][2]
@@ -445,13 +447,14 @@ function solve_wordle(puzzle_word :: T                          , # Puzzle word.
         end
     end
 
-    # Get the Wordle match info:
-    #  Exact match list: `[(LETTER, POSITION)...]`
-    #  Dictionary with info about letters that are not exact matches:
-    #    LETTER => `(k,n)`  `k` : The number of matches out of position.
-    #                             A value of 0 means that the letter is not in the puzzle.
-    #                       `n` : 0|1 If 0 there are    *exactly*  `k` matches out of position.
-    #                             If 1 there are    *at least* `k` matches out of position.
+    #= Get the Wordle match info:
+       Exact match list: `[(LETTER, POSITION)...]`
+       Dictionary with info about letters that are not exact matches:
+        LETTER => `(k,n)`  `k` : The number of matches out of position.
+                                 A value of 0 means that the letter is not in the puzzle.
+                           `n` : 0|1 If 0 there are  *exactly*  `k` matches out of position.
+                                 If 1 there are      *at least* `k` matches out of position.
+	=#
     (exact_info, ino_dct) = create_wordle_info(guess, puzzle_word)
 
     # Get the size of the current search universe.
