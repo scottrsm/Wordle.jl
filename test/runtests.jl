@@ -25,23 +25,15 @@ end
 	@test filter_words == InlineString["where"]
 end
 
-@testset "Wordle (solve_wordle with InlineString Database/Inputs)             " begin
-    res = solve_wordle(InlineString("taste"); init_guess=InlineString("their"))
-    @test res == (Any[(InlineString("their"), [('t', 1), ('e', -3)], 3585), 
-                      (InlineString("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
-                      (InlineString("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
-                      (InlineString("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
-
-end
-
-@testset "Wordle (solve_wordle with InlineString Database with String Inputs) " begin
+@testset "Wordle (solve_wordle with InlineString String/Inputs)             " begin
     res = solve_wordle("taste"; init_guess="their")
-    @test res == (Any[("their", [('t', 1), ('e', -3)], 3585), 
-                      ("taken", [('t', 1), ('a', 2), ('e', -4)], 34), 
-                      ("table", [('t', 1), ('a', 2), ('e', 5)], 3), 
-                      ("taste", [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
+	@test res == (Any[(String7("their"), [('t', 1), ('e', -3)], 3585), 
+					  (String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
+					  (String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
+					  (String7("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
 
 end
+
 
 
 

@@ -1,7 +1,7 @@
 name = "Wordle"
 uuid = "ce391ddf-23ab-468f-b121-ca3c991c210e"
 authors = ["Roland Scott McIntire"]
-version = "1.0.5"
+version = "1.0.6"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
