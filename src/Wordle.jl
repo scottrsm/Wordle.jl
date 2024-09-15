@@ -29,19 +29,15 @@ const WORDLE_DF = DataFrame(CSV.File(joinpath(@__DIR__, "../data", "wordle_db.cs
 Create an information structure of the form:
     `([LETTER, EXACT_MATCH_POSITION)], Dict(LETTER => (NUMBER_OF_MATCHES, MATCH_FLAG))`
 
-Here, the dictionary has the inexact match information:
+Here, the dictionary has the inexact match information: of words.
 - LETTER : A matching letter
 - EXACT\\_MATCH\\_POSITION: The position (1-based index) if an exact match; OR
         minus the position if the letter is used, but not at this position.
 - NUMBER\\_OF\\_MATCHES : The number of matches.
 
 The latter is interpreted thusly:
-- If MATCH\\_FLAG is 0: There are *exactly* NUMBER\\_OF\\_MATCHES with this
-                        letter that should occur in the puzzle word in addition to
-						any exact matches.
-- Else (flag is 1)    : There are *at least* NUMBER\\_OF\\_MATCHES with this
-                        letter that should occur in the puzzle word in addition to
-						any exact matches.
+- If MATCH\\_FLAG is 0: There are *exactly* NUMBER\\_OF\\_MATCHES with this letter that should occur in	the puzzle word in addition to any existing exact matches of this letter.
+- Else (flag is 1)    : There are *at least* NUMBER\\_OF\\_MATCHES with this letter that should occur in the puzzle word in addition to any existing exact matches of this letter.
 
 # Type Constraints
 - T <: AbstractString
@@ -289,19 +285,19 @@ end
 """
 	get_next_word(words, wts) 
 
-This function tries to find the "best" guess for Wordle.
+This function tries to find the "best" guess from the vector of words, `words`.
 It does this by taking each word and rearranging the letters in alphabetical order.
 It then sorts this list of new "words" lexically, while keeping the associated weights.
-This list of words is looped over, forming grouping words with associated withg equal 
-to the weights of all proper words that it contains.
+This list of words is looped over, forming grouping "words" with corresponding associated 
+weight equal to the sum of all proper words that it "contains".
 
 For instance, the words: "ether", "there", and "three" each get translated to the grouping string: "eehrt".
 Next, the grouping strings like "eehrt" are sorted. In the case of the string "eehrt", it occurs
 three times for the three associated words. The weights of the three occurrences is also kept.
 We loop over these grouping strings and add up the associated weights.
-Finally, we find the grouping string with the mist weight and look for the first match
-in `words` that belongs to this grouping string. Since `words` is ordered by weight,
-we get the word that has the highest weight.
+Finally, we find the grouping string with the most weight and look for the first match
+in the vector, `words`, that belongs to this grouping string. Since `words` is ordered by weight,
+we get the word that has the highest weight of the words in its associated grouping string.
 
 # Type Constraints
 - T <: AbtractString
@@ -312,6 +308,7 @@ we get the word that has the highest weight.
 - `wts  ::AbstractVector{Float64}` : The usage frequency of the associated words in the vector, `words`. 
 
 #  Input Contract
+-  
 - `words == words[sortperm(wts, rev=true)]`       ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
 
 # Return
