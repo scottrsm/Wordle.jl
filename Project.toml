@@ -1,13 +1,14 @@
 name = "Wordle"
 uuid = "ce391ddf-23ab-468f-b121-ca3c991c210e"
 authors = ["Roland Scott McIntire"]
-version = "1.0.6"
+version = "1.0.7"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 InlineStrings = "842dd82b-1e85-43dc-bf29-5d0ee9dffc48"
 SentinelArrays = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 julia = "1.10"

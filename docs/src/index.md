@@ -12,7 +12,27 @@ It provides the number of steps to solve along with the
 intermediate guesses.
 
 There is an associated Wordle Jupyter notebook at 
-julia/src/WordleTest.ipynb.
+src/WordleTest.ipynb.
+
+
+# Solver Strategy
+- Initial Conditions:
+  - Set puzzle\_word
+  - X = Start with universe of 5 letter words along with freqency of usage.
+  - Set current\_universe = X
+ - Start
+  - Pick guess (by default use the function `get\_next\_word`).
+  - If guess == puzzle\_word)
+    - Goto End
+  - Get wordle info about how close guess is to the correct word:
+    - wordle_info = create\_wordle\_info(<guess>, <puzzle\_word>)
+      - **Example:** wordle\_info, create\_wordle\_info("exact", "crane") =
+      ([('a', 3), ('e', -1), ('c', -4)], Dict('x' => (0, 0), 'c' => (1, 1), 'e' => (1, 1), 't' => (0, 0)))
+  - Use this match info to filter existing universe.
+    - current\_universe = filter\_universe(wordle\_info, current\_universe)
+  - Goto Start
+- End
+- Return guess
 
 
 ## Primary Function
@@ -35,6 +55,9 @@ filter_universe
 freq_letter_strat
 ```
 
+```@docs
+get_next_word
+```
 
 ## Index
 

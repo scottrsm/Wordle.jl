@@ -11,6 +11,7 @@ end
     winfo, d = create_wordle_info(InlineString("which"), InlineString("where"))
     @test  winfo == [('w', 1), ('h', 2)]
     @test  d ==  Dict('h' => (0, 0), 'c' => (0, 0), 'i' => (0, 0))
+
     winfo, d = create_wordle_info(InlineString("teens"), InlineString("where"))
     @test  winfo == [('e', 3), ('e', -2)]
     @test  d == Dict('n' => (0, 0), 's' => (0, 0), 't' => (0, 0), 'e' => (1, 1))
@@ -25,7 +26,7 @@ end
 	@test filter_words == InlineString["where"]
 end
 
-@testset "Wordle (solve_wordle with InlineString String/Inputs)             " begin
+@testset "Wordle (solve_wordle with InlineString Inputs)                      " begin
     res = solve_wordle("taste"; init_guess="their")
 	@test res == (Any[(String7("their"), [('t', 1), ('e', -3)], 3585), 
 					  (String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
