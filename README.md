@@ -18,3 +18,4 @@ The stats for the solver are (based on 3585 five letter words):
 - When Unsuccessful: The mean number of guesses to complete (weighted by word usage frequency): 7.1.
 - Percent unsuccessful: 1.45%.
 - Percent unsuccessful (weighted by word usage frequency): 0.038%.
+

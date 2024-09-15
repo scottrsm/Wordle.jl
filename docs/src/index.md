@@ -18,7 +18,7 @@ src/WordleTest.ipynb.
 # Solver Strategy
 - Initial Conditions:
   - Set puzzle\_word
-  - X = Start with universe of 5 letter words along with freqency of usage.
+  - X = Start with universe of 5 letter words along with frequency of usage.
   - Set current\_universe = X
  - Start
   - Pick guess (by default use the function `get_next_word`).

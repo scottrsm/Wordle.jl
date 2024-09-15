@@ -47,9 +47,8 @@ The latter is interpreted thusly:
 - `pword::T`: The puzzle word.
 
 
-# Returns
-    A tuple of a vector of tuples of exact matches and a dictionary of
-    inexact match info.
+# Return
+A tuple of a vector of tuples of exact matches and a dictionary of inexact match info.
 
 # Examples
 ```jdoctest
@@ -120,7 +119,7 @@ end
 Filter an existing universe of words based on match info.
 
 # Type Constraints
-- T <: AbtractString
+- T <: AbstractString
 
 # Arguments
 - `wordle_info` : Wordle info of the form:
@@ -147,16 +146,16 @@ julia> filter_universe((winfo, d), words)
  "where"
 ```
 """
-function filter_universe(wordle_info::Tuple{Vector{Tuple{Char,Int}},Dict{Char,Tuple{Int,Int}}},
-    words::Vector{T},
-)::Vector{T} where {T<:AbstractString}
+function filter_universe(wordle_info::Tuple{Vector{Tuple{Char,Int}}, Dict{Char, Tuple{Int, Int}}}, 
+						 words::Vector{T}
+						 )::Vector{T} where {T<:AbstractString}
 
     # Nothing left to filter.
     if length(words) == 0
         return (words)
     end
 
-    # Destructure the `worlde_info`, get the length of the words
+    # De-structure the `worldle_info`, get the length of the words
     # used in word lists.
     (winfo, d) = wordle_info
     word_len = length(words[1])
@@ -221,29 +220,26 @@ The strategy consists of the following:
         This will be our guess.
 
 # Type Constraints
-- T <: AbtractString
+- T <: AbstractString
+
+# Input Contract
+The characters in swords are lowercase letters: [a-z].
 
 # Arguments
 - `swords::AbstractVector`    : A Vector of sorted strings (sorted by frequency of occurrence).
 - `lfa::Vector{Char}`         : This is the alphabet in lower case as a character vector from
                                 most to least used.
-- `c_idx::Vector{Int}`      : This is the index values of words to analyze.
-                This list is usually the complement
-                of exact match indices from a previous guess.
+- `c_idx::Vector{Int}`        : This is the index values of words to analyze.
+                                This list is usually the complement
+                                of exact match indices from a previous guess.
 
 # Return
-
-    A guess word.
-
-# Assumes
-
-    The characters in swords are lowercase letters: [a-z].
-
+	A guess word.
 """
 function freq_letter_strat(swords::AbstractVector{T}, # The sorted list of words to choose from.
-    lfa::Vector{Char}, # The letter frequency order of the alphabet.
-    c_idx::Vector{Int}, # The complement of the indices that are exact.
-)::T where {T<:AbstractString}
+                           lfa::Vector{Char}        , # The letter frequency order of the alphabet.
+                           c_idx::Vector{Int}       , # The complement of the indices that are exact.
+                           )::T where {T<:AbstractString}
 
     # Create corresponding dictionaries for each index.
     ds = [Dict{Char,Int}() for _ in c_idx]
@@ -300,21 +296,20 @@ in the vector, `words`, that belongs to this grouping string. Since `words` is o
 we get the word that has the highest weight of the words in its associated grouping string.
 
 # Type Constraints
-- T <: AbtractString
+- T <: AbstractString
 
 # Arguments
-
 - `words::AbstractVector{T}`       : The remaining pool of words to guess from.
 - `wts  ::AbstractVector{Float64}` : The usage frequency of the associated words in the vector, `words`. 
 
 #  Input Contract
--  
-- `words == words[sortperm(wts, rev=true)]`       ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
+- `words == words[sortperm(wts, rev=true)]` ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
 
 # Return
-::Int -- The index of a "best" guess in the user supplied vector  of words.
+The index of a "best" guess in the user supplied vector of words.
 """
-function get_next_word(words::AbstractVector{T}, wts::AbstractVector{Float64}) :: Int  where {T <: AbstractString}
+function get_next_word(words::AbstractVector{T}   , 
+                       wts::AbstractVector{Float64}) :: Int  where {T <: AbstractString}
 
     # Create a new vector of "words" that rearranges the characters of each word in sorted (lexical) order.
     swrds = map(x -> join(sort(split(x, ""))), words)
@@ -376,10 +371,16 @@ Solves a NYT Wordle puzzle.
 By default, makes guesses based on function, `get_next_word`.
 However, there is an option to pass in a guessing strategy function.
 
-# ASSUMES: The universe DataFrame is sorted from highest frequency to lowest.
+# Input Contract
+- The universe DataFrame is sorted from highest frequency to lowest.
+- `universe_df` schema is (:word, :freq). Define `words`, `freq`, and `N` by:
+    - `words = universe_df[:words]`;
+    - `freq  = universe[:freq]`;
+    - `N     = |universe|`
+- `∃ m > 0, ∀ i∈[1,N], |words[i]| == m` ``\\quad`` (All the words in `universe_df` have the same length. )
+- `words == words[sortperm(wts, rev=true)]`  ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
 
 # Arguments
-
 - `puzzle_word::String`    : The puzzle word.
 - `universe_df::DataFrame` : A DataFrame with schema: word(words of the same length),
                              freq(freq fraction by use)
@@ -393,13 +394,12 @@ However, there is an option to pass in a guessing strategy function.
 - `lfa::Vector{Char}`         : The lowercase alphabet listed in frequency-of-use order.
 
 # Keyword Arguments
-
 - `chk_inputs::Bool`     : If `true`, check the input contract.
 - `guess_strategy::Union{Function,Nothng}` : If not `nothing`, apply this function to pick the next guess.
-                     If `nothing`, pick based on the function `get_next_word`.
-- `ul::Int`             : The lower threshold size of the filtered Wordle universe.
-- `uu::Int`             : The upper threshold size of the filtered Wordle universe.
-- `init_guess::String`     : The starting guess to use.
+                           If `nothing`, pick based on the function `get_next_word`.
+- `ul::Int`              : The lower threshold size of the filtered Wordle universe.
+- `uu::Int`              : The upper threshold size of the filtered Wordle universe.
+- `init_guess::String`   : The starting guess to use.
 
 Here,
 - `exact_info` has the form: `[(LETTER, POSITION) ...]`
@@ -409,22 +409,15 @@ Here,
   is used -- the most frequently used word in the existing filtered Wordle
   universe is chosen.
 
-#  Input Contract
-- `universe_df` schema is (:word, :freq). Define `words`, `freq`, and `N` by:
-    - `words = universe_df[:words]`;
-    - `freq  = universe[:freq]`;
-    - `N     = |universe|`
-- `∃ m > 0, ∀ i∈[1,N], |words[i]| == m` ``\\quad`` (All the words in `universe_df` have the same length. )
-- `words == words[sortperm(wts, rev=true)]`  ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
 
 # Return
-    (sol_path, number-of-guesses, :SUCCESS/:FAILURE)
+(sol_path, number-of-guesses, :SUCCESS/:FAILURE)
 
-   **NOTE:** A sol_path that does not include the puzzle word, means
-              that at some point after a guess was made -- along with
-              the corresponding filtering of the universe -- there was
-              only one word left. In this case the guess count was
-              increased by 1, but the function did not recurse.
+**NOTE:** A sol_path that does not include the puzzle word, means
+          that at some point after a guess was made -- along with
+          the corresponding filtering of the universe -- there was
+          only one word left. In this case the guess count was
+          increased by 1, but the function did not recurse.
 
 # Examples
 ```jdoctest
@@ -435,19 +428,20 @@ julia> solve_wordle("taste"; init_guess="their")
 	 (String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
 	 (String7("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
 ```
+
 """
-function solve_wordle(puzzle_word::String, # Puzzle word.
-    universe_df::DataFrame=WORDLE_DF, # Wordle database as DataFrame.
-    rec_count::Int=1, # Number of calls (including this one) to this function.
-    sol_path::Vector{Any}=[], # The solution path of guessed words, so far.
-    last_guess="", # The last guess.
-    lfa::Vector{Char}=LFA; # The frequency of use of the alphabet.
-    chk_inputs::Bool=true, # Do we check the input contract?
-    guess_strategy::Union{Function,Nothing}=nothing, # Function to pick the next guess.
-    ul::Int=20, # Used if function guess_strategy given.
-    uu::Int=50, # Used if function guess_strategy given.
-    init_guess::String="trace", # Starting guess to use.
-)::Tuple{Any,Int,Symbol} 
+function solve_wordle(puzzle_word::String             , # Puzzle word.
+                      universe_df::DataFrame=WORDLE_DF, # Wordle database as DataFrame.
+                      rec_count::Int=1                , # Number of calls (including this one) to this function.
+                      sol_path::Vector{Any}=[]        , # The solution path of guessed words, so far.
+                      last_guess=""                   , # The last guess.
+                      lfa::Vector{Char}=LFA           ; # The frequency of use of the alphabet.
+                      chk_inputs::Bool=true           , # Do we check the input contract?
+                      ul::Int=20                      , # Used if function guess_strategy given.
+                      uu::Int=50                      , # Used if function guess_strategy given.
+                      init_guess::String="trace"      , # Starting guess to use.
+                      guess_strategy::Union{Function,Nothing}=nothing, # Function to pick the next guess.
+                      )::Tuple{Any,Int,Symbol} 
 
     # Check input contract?
     if chk_inputs && rec_count == 1
@@ -546,7 +540,7 @@ function solve_wordle(puzzle_word::String, # Puzzle word.
         return ((sol_path, rec_count, :FAILURE))
     end
 
-    # Get the new universe as a dataframe and sort it based on frequency
+    # Get the new universe as a Dataframe and sort it based on frequency
     # of occurrence from highest to lowest.
     nuniv_df = filter(:word => x -> x in new_universe, universe_df)
     sort!(nuniv_df, order(:freq, rev=true))
