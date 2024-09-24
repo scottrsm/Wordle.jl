@@ -11,7 +11,7 @@ struct NotSorted <: Exception
     var::String
 end
 
-Base.show(io::IO, e::NotSorted) = print(io, "Words are NOT sorted by $(e.var)")
+Base.show(io::IO, e::NotSorted) = print(io, "Words, $(e.var), are NOT sorted")
 
 # LFA is an ordering of the alphabet based on letter frequency
 # from some corpus of text.
@@ -439,7 +439,7 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
                       chk_inputs::Bool=true           , # Do we check the input contract?
                       ul::Int=20                      , # Used if function guess_strategy given.
                       uu::Int=50                      , # Used if function guess_strategy given.
-                      init_guess::String="trace"      , # Starting guess to use.
+                      init_guess::String="stare"      , # Starting guess to use.
                       guess_strategy::Union{Function,Nothing}=nothing, # Function to pick the next guess.
                       )::Tuple{Any,Int,Symbol} 
 
@@ -459,7 +459,7 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
 
         # 3. Check that the words are already sorted from highest to lowest.
         sidx = sortperm(universe_df[!, :freq], rev=true)
-        words[sidx] != words && throw(NotSorted("`words`: Not sorted from hightest to lowest by usage frequency"))
+		words[sidx] != words && throw(NotSorted("`words`: Not sorted from hightest to lowest by usage frequency (:freq)."))
     end
 
     puzzle_word = String7(puzzle_word)
@@ -470,7 +470,7 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
     univs = Array(universe_df[!, :word])
     uwts = Array(universe_df[!, :freq])
 
-    # Current guessing strategy is to take the most frequently used word
+    # Current guessing strategy is to use the function `get_next_word` 
     #  in the current universe -- except for the very first guess.
 	guess = String7(univs[1])
     if last_guess == ""
@@ -480,9 +480,9 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
         if length(univs) == 0
             return ((sol_path, rec_count, :FAILURE))
         end
-        # Get the most frequent word from the new filtered list of words.
-        idx = get_next_word(univs, uwts)
-        guess = String7(univs[idx])
+        # Get the best quess for the next word.
+    	idx = get_next_word(univs, uwts)
+       	guess = String7(univs[idx])
     end
     word_len = length(guess)
 
