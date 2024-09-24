@@ -28,10 +28,10 @@ end
 
 @testset "Wordle (solve_wordle with InlineString Inputs)                      " begin
     res = solve_wordle("taste"; init_guess="their")
-	@test res == (Any[(String7("their"), [('t', 1), ('e', -3)], 3585), 
-					  (String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
-					  (String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
-					  (String7("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
+	@test res == (Any[(String7("their"), [('t', 1), ('e', -3)], 3591), 
+		(String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
+		(String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
+		(String7("taste"), [('t', 1), ('a', 2), ('s', 3),('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
 
 end
 
