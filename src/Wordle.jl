@@ -1,6 +1,7 @@
 module Wordle
 
 export create_wordle_info, filter_universe, freq_letter_strat, get_next_word, solve_wordle
+export NotSorted, BadLength
 
 import CSV
 import StatsBase
@@ -11,7 +12,13 @@ struct NotSorted <: Exception
     var::String
 end
 
-Base.show(io::IO, e::NotSorted) = print(io, "Words, $(e.var), are NOT sorted")
+struct BadLength <: Exception
+    var::String
+end
+
+# Add a show method for our specialized errors.
+Base.show(io::IO, e::NotSorted) = print(io, "Words, $(e.var), are NOT sorted.")
+Base.show(io::IO, e::BadLength) = print(io, "Word, $(e.var), is not of the proper length.")
 
 # LFA is an ordering of the alphabet based on letter frequency
 # from some corpus of text.
@@ -459,6 +466,12 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
         # 3. Check that the words are already sorted from highest to lowest.
         sidx = sortperm(universe_df[!, :freq], rev=true)
 		words[sidx] != words && throw(NotSorted("`words`: Not sorted from hightest to lowest by usage frequency (:freq)."))
+
+		# 4. Check that the supplied word has the correct length.
+		length(puzzle_word) != length(words[1]) && throw(BadLength("`puzzle_word`: Is not the same length as the words in our database."))
+
+		# 5. Check that the initial guess has the correct length.
+		length(init_guess) != length(words[1]) && throw(BadLength("`init_guess`: Is not the same length as the words in our database."))
     end
 
     puzzle_word = String7(puzzle_word)
