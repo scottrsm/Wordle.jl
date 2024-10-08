@@ -1,7 +1,7 @@
 name = "Wordle"
 uuid = "ce391ddf-23ab-468f-b121-ca3c991c210e"
 authors = ["Roland Scott McIntire"]
-version = "1.2.0"
+version = "1.2.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -11,7 +11,7 @@ SentinelArrays = "91c51154-3ec4-41a3-a24f-3f23e20d615c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-julia = "1.10"
+julia = "1.11"
 
 [extras]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
