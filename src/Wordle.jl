@@ -181,9 +181,12 @@ function filter_universe(wordle_info::Tuple{Vector{Tuple{Char,Int}}, Dict{Char, 
         words = filter(word -> cstr == word[e_idxs], words)
     end
 
-    if length(ie_idxs) > 0
-        cstr = T(String([ci[1] for ci in winfo if ci[2] < 0]))
-        words = filter(word -> cstr != word[ie_idxs], words)
+    for ci in winfo
+        if ci[2] < 0
+            pos = -ci[2]
+            letter = ci[1]
+            words = filter(word -> word[pos] != letter, words)
+        end
     end
 
     # These are the indices of potential inexact matches.
@@ -250,7 +253,7 @@ function freq_letter_strat(swords::AbstractVector{T}, # The sorted list of words
 
     # Create corresponding dictionaries for each index.
     ds = [Dict{Char,Int}() for _ in c_idx]
-    ary = []
+    ary = Tuple{Int, Char, Int, Int}[]
 
     # Fill each of the dicts: at index
     # `i`, `ds[i]`: char => count (using swords)
@@ -272,7 +275,7 @@ function freq_letter_strat(swords::AbstractVector{T}, # The sorted list of words
     end
 
     # Sort `ary` by occurrence followed by `lfa` order.
-    sary = sort(ary, lt=((x, y) -> (x[3] < y[3]) | (x[3] == y[3] & (x[4] > y[4]))), rev=true)
+    sary = sort(ary, lt=((x, y) -> (x[3] < y[3]) || ((x[3] == y[3]) && (x[4] > y[4]))), rev=true)
 
     # Get the index and character of the most frequent/most-used character.
     idx = sary[1][1]
@@ -453,7 +456,7 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
     if chk_inputs && rec_count == 1
         # 0. Get the words from the universe and ensure that we have more than 1.
         words = universe_df[!, :word]
-        length(words) <= 1 && throw(DomainError(0, "Their is at most one word in the `universe_df`."))
+        length(words) <= 1 && throw(DomainError(0, "There is at most one word in the `universe_df`."))
 
         # 1. Does `universe_df` have the correct schema?
         Set(names(universe_df)) != Set(["word", "freq"]) && throw(DomainError(0, "The column names of `universe_df` are not correct."))
@@ -488,11 +491,13 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
     if last_guess == ""
 		guess = String7(init_guess)
     else
-        univs = filter(x -> x != last_guess, univs)
+        mask = univs .!= last_guess
+        univs = univs[mask]
+        uwts = uwts[mask]
         if length(univs) == 0
             return ((sol_path, rec_count, :FAILURE))
         end
-        # Get the best quess for the next word.
+        # Get the best guess for the next word.
     	idx = get_next_word(univs, uwts)
        	guess = String7(univs[idx])
     end
