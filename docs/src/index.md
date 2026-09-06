@@ -59,6 +59,20 @@ freq_letter_strat
 get_next_word
 ```
 
+```@docs
+LFA
+```
+
+## Exceptions
+
+```@docs
+NotSorted
+```
+
+```@docs
+BadLength
+```
+
 ## Index
 
 ```@index

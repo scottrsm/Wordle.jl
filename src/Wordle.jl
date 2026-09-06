@@ -1,28 +1,45 @@
 module Wordle
 
 export create_wordle_info, filter_universe, freq_letter_strat, get_next_word, solve_wordle
-export NotSorted, BadLength
+export NotSorted, BadLength, LFA
 
 import CSV
-import StatsBase
 using DataFrames
 using InlineStrings
 
+"""
+    NotSorted(var)
+
+Exception thrown when a word list (`var`) is not sorted from highest to lowest usage frequency.
+"""
 struct NotSorted <: Exception
     var::String
 end
 
+"""
+    BadLength(var)
+
+Exception thrown when a word (`var`) does not have the length of the words in the universe.
+"""
 struct BadLength <: Exception
     var::String
 end
 
-# Add a show method for our specialized errors.
-Base.show(io::IO, e::NotSorted) = print(io, "Words, $(e.var), are NOT sorted.")
-Base.show(io::IO, e::BadLength) = print(io, "Word, $(e.var), is not of the proper length.")
+# Add error messages for our specialized errors.
+Base.showerror(io::IO, e::NotSorted) = print(io, "NotSorted: Words, $(e.var), are NOT sorted.")
+Base.showerror(io::IO, e::BadLength) = print(io, "BadLength: Word, $(e.var), is not of the proper length.")
 
-# LFA is an ordering of the alphabet based on letter frequency
-# from some corpus of text.
+"""
+    LFA
+
+An ordering of the (lowercase) alphabet based on letter frequency from some corpus of
+English text, most frequent first: `"etaoinshrdlcumwfgypbvkjxqz"`.
+Used by `freq_letter_strat` (and `solve_wordle`) to break ties between letters.
+"""
 const LFA = collect("etaoinshrdlcumwfgypbvkjxqz")
+
+# The maximum number of guesses allowed to solve a puzzle.
+const MAX_GUESSES = 6
 
 # Load Wordle database -- stored as a CSV file.
 const WORDLE_DF = DataFrame(CSV.File(joinpath(@__DIR__, "../data", "wordle_db.csv");
@@ -54,6 +71,9 @@ The latter is interpreted thusly:
 - `pword::T`: The puzzle word.
 
 
+# Input Contract
+- `length(guess) == length(pword)` -- otherwise a `BadLength` exception is thrown.
+
 # Return
 A tuple of a vector of tuples of exact matches and a dictionary of inexact match info.
 
@@ -72,6 +92,7 @@ function create_wordle_info(guess::T, # Guess
                             pword::T, # Puzzle word
                                      )::Tuple{Vector{Tuple{Char,Int}},Dict{Char,Tuple{Int,Int}}} where {T<:AbstractString}
     n = length(pword)
+    length(guess) == n || throw(BadLength("`guess` ($guess) does not have the length of the puzzle word ($pword)"))
     e_idx = Int[]
     f_idx = collect(1:n)
     c_idx = Int[]
@@ -195,12 +216,11 @@ function filter_universe(wordle_info::Tuple{Vector{Tuple{Char,Int}}, Dict{Char, 
 
     # Adjust filtering based on match flag `(d[k][2])`.
     if m > 0
-        for k in keys(d)
-            fil = fill(k, m)
-            if d[k][2] == 0
-                words = filter(word -> sum(collect(word[c_idx]) .== fil) == d[k][1], words)
+        for (k, (cnt, flag)) in d
+            if flag == 0
+                words = filter(word -> count(i -> word[i] == k, c_idx) == cnt, words)
             else
-                words = filter(word -> sum(collect(word[c_idx]) .== fil) >= d[k][1], words)
+                words = filter(word -> count(i -> word[i] == k, c_idx) >= cnt, words)
             end
         end
     end
@@ -269,7 +289,9 @@ function freq_letter_strat(swords::AbstractVector{T}, # The sorted list of words
         mx = maximum(values(ds[i]))
         for (k, v) in ds[i]
             if v == mx
-                push!(ary, (c_idx[i], k, v, (findall(x -> x == k, lfa))[1]))
+                order = findfirst(==(k), lfa)
+                order === nothing && throw(ArgumentError("freq_letter_strat: the letter '$k' does not occur in `lfa` (words must consist of lowercase letters a-z)."))
+                push!(ary, (c_idx[i], k, v, order))
             end
         end
     end
@@ -310,16 +332,20 @@ we get the word that has the highest weight of the words in its associated group
 
 # Arguments
 - `words::AbstractVector{T}`       : The remaining pool of words to guess from.
-- `wts  ::AbstractVector{Float64}` : The usage frequency of the associated words in the vector, `words`. 
+- `wts  ::AbstractVector{<:Real}`  : The usage frequency of the associated words in the vector, `words`. 
 
 #  Input Contract
 - `words == words[sortperm(wts, rev=true)]` ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
+- `|words| == |wts| > 0`
 
 # Return
 The index of a "best" guess in the user supplied vector of words.
 """
-function get_next_word(words::AbstractVector{T}   , 
-                       wts::AbstractVector{Float64}) :: Int  where {T <: AbstractString}
+function get_next_word(words::AbstractVector{T}  , 
+                       wts::AbstractVector{<:Real}) :: Int  where {T <: AbstractString}
+
+    isempty(words) && throw(ArgumentError("get_next_word: the word list is empty."))
+    length(words) == length(wts) || throw(DimensionMismatch("get_next_word: `words` and `wts` have different lengths."))
 
     # Create a new vector of "words" that rearranges the characters of each word in sorted (lexical) order.
     swrds = map(x -> join(sort(split(x, ""))), words)
@@ -334,15 +360,14 @@ function get_next_word(words::AbstractVector{T}   ,
     # These new words are actually "word groupings": For instance, the word, "eehrt", represents the three 5 letter words: "ether, there", and "three".
     # The associated weight of "eehrt" is the sum of the weights associated with "ether", "there", and "three" from the word list weights, `swts`.
     N     = length(swrds)
-    nwrds = Vector{T}(undef, N)
-    nwts  = Vector{Float64}(undef, N)
+    nwrds = Vector{eltype(swrds)}(undef, N)
+    nwts  = Vector{float(eltype(wts))}(undef, N)
 
 	N != 1 || return(1)
 
     last_str = swrds[1]
     wt = swts[1]
     j = 1
-    last_i = 0
     for i in 2:N
         if last_str == swrds[i]
              wt += swts[i]
@@ -352,14 +377,13 @@ function get_next_word(words::AbstractVector{T}   ,
             last_str = swrds[i]
             wt = swts[i]
             j += 1
-            last_i = i
         end
     end
     nwts[j] = wt
     nwrds[j] = last_str
 
     # Now find the "word grouping" with the most weight.
-    idx = partialsortperm(nwts[1:j], 1; rev=true)
+    idx = argmax(view(nwts, 1:j))
     best_group = nwrds[idx]
 
     # Find the first word in the original word list that matches the letters in `base_group`.
@@ -384,8 +408,8 @@ However, there is an option to pass in a guessing strategy function.
 # Input Contract
 - The universe DataFrame is sorted from highest frequency to lowest.
 - `universe_df` schema is (:word, :freq). Define `words`, `freq`, and `N` by:
-    - `words = universe_df[:words]`;
-    - `freq  = universe[:freq]`;
+    - `words = universe_df[!, :word]`;
+    - `freq  = universe_df[!, :freq]`;
     - `N     = |universe|`
 - `∃ m > 0, ∀ i∈[1,N], |words[i]| == m` ``\\quad`` (All the words in `universe_df` have the same length. )
 - `words == words[sortperm(wts, rev=true)]`  ``\\quad`` (Words are sorted from highest to lowest by word *usage*.)
@@ -400,12 +424,12 @@ However, there is an option to pass in a guessing strategy function.
 - `rec_count::Int`   : The number of calls to this function.
 - `sol_path::Vector{Any}`    : Any containing the current list of guesses:
                     `[ (guess, exact_info, universe_size) ...]`
-- `last_guess::String`  : The previous guess.
+- `last_guess::AbstractString`  : The previous guess (`""` for the first call).
 - `lfa::Vector{Char}`         : The lowercase alphabet listed in frequency-of-use order.
 
 # Keyword Arguments
 - `chk_inputs::Bool`     : If `true`, check the input contract.
-- `guess_strategy::Union{Function,Nothng}` : If not `nothing`, apply this function to pick the next guess.
+- `guess_strategy::Union{Function,Nothing}` : If not `nothing`, apply this function to pick the next guess.
                            If `nothing`, pick based on the function `get_next_word`.
 - `ul::Int`              : The lower threshold size of the filtered Wordle universe.
 - `uu::Int`              : The upper threshold size of the filtered Wordle universe.
@@ -422,6 +446,9 @@ Here,
 
 # Return
 (sol_path, number-of-guesses, :SUCCESS/:FAILURE)
+
+`:SUCCESS` means the puzzle word was found within 6 guesses; `:FAILURE` means it
+was not (either more than 6 guesses were needed, or the word is not in the universe).
 
 **NOTE:** A sol_path that does not include the puzzle word, means
           that at some point after a guess was made -- along with
@@ -454,15 +481,15 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
 
     # Check input contract?
     if chk_inputs && rec_count == 1
-        # 0. Get the words from the universe and ensure that we have more than 1.
+        # 0. Does `universe_df` have the correct schema?
+        Set(names(universe_df)) != Set(["word", "freq"]) && throw(DomainError(0, "The column names of `universe_df` are not correct (expected :word and :freq)."))
+
+        # 1. Get the words from the universe and ensure that we have more than 1.
         words = universe_df[!, :word]
         length(words) <= 1 && throw(DomainError(0, "There is at most one word in the `universe_df`."))
 
-        # 1. Does `universe_df` have the correct schema?
-        Set(names(universe_df)) != Set(["word", "freq"]) && throw(DomainError(0, "The column names of `universe_df` are not correct."))
-
         # 2. Do :words from `universe_df` have the same length?
-        if sum(diff(map(word -> length(word), words))) != 0
+        if !allequal(length, words)
             throw(DomainError(0, "Some words in `universe_df` have differing lengths."))
         end
 
@@ -477,19 +504,21 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
 		length(init_guess) != length(words[1]) && throw(BadLength("`init_guess`: Is not the same length as the words in our database."))
     end
 
-    puzzle_word = String7(puzzle_word)
-	last_guess = String7(last_guess)
-	init_guess = String7(init_guess)
-
     # Get a reference to the Wordle universe.
     univs = Array(universe_df[!, :word])
     uwts = Array(universe_df[!, :freq])
 
+    # Use the string type of the universe for the puzzle word and guesses (any word length).
+    WT = eltype(univs)
+    puzzle_word = WT(puzzle_word)
+	last_guess = WT(last_guess)
+	init_guess = WT(init_guess)
+
     # Current guessing strategy is to use the function `get_next_word` 
     #  in the current universe -- except for the very first guess.
-	guess = String7(univs[1])
+	guess = univs[1]
     if last_guess == ""
-		guess = String7(init_guess)
+		guess = init_guess
     else
         mask = univs .!= last_guess
         univs = univs[mask]
@@ -499,7 +528,7 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
         end
         # Get the best guess for the next word.
     	idx = get_next_word(univs, uwts)
-       	guess = String7(univs[idx])
+       	guess = univs[idx]
     end
     word_len = length(guess)
 
@@ -532,11 +561,9 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
     n = length(univs)
     push!(sol_path, (guess, exact_info, n))
 
-    # if we guessed the puzzle word, return success.
-	if guess == puzzle_word && rec_count <= 6
-        return ((sol_path, rec_count, :SUCCESS))
-	elseif guess == puzzle_word
-        return ((sol_path, rec_count, :FAILURE))
+    # if we guessed the puzzle word, return success -- if within the allowed number of guesses.
+	if guess == puzzle_word
+        return ((sol_path, rec_count, rec_count <= MAX_GUESSES ? :SUCCESS : :FAILURE))
     end
 
     # Filter the current universe based on the match info to get the new universe.
@@ -547,7 +574,8 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
     if n == 0 # The information does not lead to a solution -- the puzzle word is not in our initial universe.
         return ((sol_path, rec_count, :FAILURE))
     elseif n == 1 && puzzle_word == new_universe[1] # We know the solution without having to recurse again.
-        return ((sol_path, rec_count + 1, :SUCCESS))
+        # The final guess still counts: it must be within the allowed number of guesses.
+        return ((sol_path, rec_count + 1, rec_count + 1 <= MAX_GUESSES ? :SUCCESS : :FAILURE))
     elseif n == 1 # The puzzle word is not in our initial universe.
         return ((sol_path, rec_count + 1, :FAILURE))
     end
@@ -559,7 +587,8 @@ function solve_wordle(puzzle_word::String             , # Puzzle word.
 
     # Get the new universe as a Dataframe and sort it based on frequency
     # of occurrence from highest to lowest.
-    nuniv_df = filter(:word => x -> x in new_universe, universe_df)
+    new_universe_set = Set(new_universe)
+    nuniv_df = filter(:word => x -> x in new_universe_set, universe_df)
     sort!(nuniv_df, order(:freq, rev=true))
 
     # Recurse...
