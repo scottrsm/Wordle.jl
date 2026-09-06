@@ -4,6 +4,8 @@ import Pkg
 Pkg.add("Documenter")
 using Documenter
 
+DocMeta.setdocmeta!(Wordle, :DocTestSetup, :(using Wordle); recursive=true)
+
 makedocs(
 	sitename = "Wordle",
 	format = Documenter.HTML(),

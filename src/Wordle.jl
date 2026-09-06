@@ -78,12 +78,12 @@ The latter is interpreted thusly:
 A tuple of a vector of tuples of exact matches and a dictionary of inexact match info.
 
 # Examples
-```jdoctest
+```jldoctest
 julia> create_wordle_info("which", "where")
 ([('w', 1), ('h', 2)], Dict('h' => (0, 0), 'c' => (0, 0), 'i' => (0, 0)))
 ```
 
-```jdoctest
+```jldoctest
 julia> create_wordle_info("teens", "where")
 ([('e', 3), ('e', -2)], Dict('n' => (0, 0), 's' => (0, 0), 't' => (0, 0), 'e' => (1, 1)))
 ```
@@ -161,16 +161,14 @@ Filter an existing universe of words based on match info.
     from `wordle_info`.
 
 # Examples
-```jdoctest
+```jldoctest
 julia> (winfo, d) = create_wordle_info("which", "where")
-
 ([('w', 1), ('h', 2)], Dict('h' => (0, 0), 'c' => (0, 0), 'i' => (0, 0)))
 
-julia> words = ["state", "which", "where", "child", "there", "taste"]
+julia> words = ["state", "which", "where", "child", "there", "taste"];
 
 julia> filter_universe((winfo, d), words)
-
-1-element Vector{T}:
+1-element Vector{String}:
  "where"
 ```
 """
@@ -457,12 +455,9 @@ was not (either more than 6 guesses were needed, or the word is not in the unive
           increased by 1, but the function did not recurse.
 
 # Examples
-```jdoctest
+```jldoctest
 julia> solve_wordle("taste"; init_guess="their")
-(Any[(String7("their"), [('t', 1), ('e', -3)], 3591), 
-	 (String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), 
-	 (String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), 
-	 (String7("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
+(Any[(InlineStrings.String7("their"), [('t', 1), ('e', -3)], 3591), (InlineStrings.String7("taken"), [('t', 1), ('a', 2), ('e', -4)], 34), (InlineStrings.String7("table"), [('t', 1), ('a', 2), ('e', 5)], 3), (InlineStrings.String7("taste"), [('t', 1), ('a', 2), ('s', 3), ('t', 4), ('e', 5)], 2)], 4, :SUCCESS)
 ```
 
 """
